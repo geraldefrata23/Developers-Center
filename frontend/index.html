@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShopeePay Developers Center — API Reference</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200..800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+<div class="topbar">
+  <div id="backBtnSlot"></div>
+  <div class="brand" onclick="App.backToLanding()" style="cursor:pointer;">
+    <img src="https://product.shopeepay.com/static/images/logo/shopeepay-logo.svg?w=256&amp;q=75" alt="ShopeePay"
+         onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'mark',textContent:'S'}))">
+    <div class="word"><small>Developers Center</small></div>
+  </div>
+  <div class="top-spacer"></div>
+  <div class="top-actions" id="topActions">
+    <!-- Rebuilt by TopBar.render() in core/render.ts: EN/ID language toggle
+         (replaces the old unused search box) and the My Credentials button
+         (product pages only — the chooser page has nothing to manage yet). -->
+  </div>
+</div>
+
+<!-- Landing chooser: SNAP API vs AirPay Gateway Service API. Rendered by
+     core/landing.ts. Hidden once a product is picked. -->
+<div id="landing"></div>
+
+<!-- Product shell: sidebar + docs + Try It panel. Shared by both products;
+     which NAV/EP/STATIC set feeds it depends on App.mode (core/render.ts). -->
+<div class="shell" id="shell">
+  <div class="sidebar" id="sidebar"></div>
+  <div class="main">
+    <div class="docs" id="docs"></div>
+    <div class="tryit-wrap" id="tryit"></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal" id="modalInner">
+    <!-- Rebuilt by Credentials.renderModalChrome() in core/credentials.ts. -->
+  </div>
+</div>
+
+<!-- Blocking prompt shown when a Link & Pay family endpoint is missing an
+     accountToken — see core/tryit.ts showAccountTokenGuard(). -->
+<div class="modal-bg" id="guardModalBg">
+  <div class="modal narrow" id="guardModal"></div>
+</div>
+
+<!-- ES modules: the browser resolves every import itself (see frontend/src),
+     no bundler needed. Only the entry point is listed — everything else is
+     pulled in transitively via `import`. Module scripts are deferred by
+     default, so this safely runs after the DOM above has parsed. -->
+<script type="module" src="/dist/core/main.js"></script>
+</body>
+</html>
