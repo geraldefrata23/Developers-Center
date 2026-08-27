@@ -1,0 +1,34 @@
+#:schema node_modules/wrangler/config-schema.json
+# Cloudflare Workers entry point for the ShopeePay Developers Center.
+#
+# This Worker does the same two jobs backend/server.js does for local/Node
+# hosting, just adapted to the Workers runtime (no app.listen()):
+#   1. Serves the static frontend (frontend/) via the Assets binding.
+#   2. Exposes POST /api/sandbox/execute, calling the SAME
+#      backend/services/snapClient.js::execute() used locally — no signing
+#      logic was touched, only how it's wired up (fetch handler instead of
+#      an Express route).
+#
+# "name" must match the Worker already created in the Cloudflare dashboard
+# (the one serving dev-center.gerald-gerald.workers.dev) — update it if the
+# dashboard Worker uses a different name.
+name = "dev-center"
+main = "worker.js"
+compatibility_date = "2026-08-27"
+
+# nodejs_compat_populate_process_env: lets [vars]/secrets set in the
+# Cloudflare dashboard reach process.env, same as they would via .env
+# locally (backend/services/snapClient.js reads SNAP_BASE, AIRPAY_BASE,
+# SNAP_CHANNEL_ID, DEBUG_SANDBOX_CALLS from process.env).
+compatibility_flags = ["nodejs_compat", "nodejs_compat_populate_process_env"]
+
+# Cloudflare's Git-integration build step runs this before `wrangler deploy`,
+# which is what generates frontend/dist/ (tsc output, gitignored) that
+# frontend/index.html loads as /dist/core/main.js.
+[build]
+command = "npm run build"
+
+[assets]
+directory = "./frontend"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
