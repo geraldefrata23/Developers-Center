@@ -8,7 +8,8 @@
     "build": "tsc -p frontend/tsconfig.json",
     "build:watch": "tsc -p frontend/tsconfig.json --watch",
     "start": "npm run build && node backend/server.js",
-    "dev": "npm run build && node --watch backend/server.js"
+    "dev": "npm run build && node --watch backend/server.js",
+    "test": "node --test backend/services/*.test.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

@@ -2,7 +2,11 @@
  * core/diagrams.ts
  * -------------------------------------------------------------------------
  * Draws the small "Flow" sequence diagram at the top of each endpoint page.
- * Pure function in, SVG string out — no DOM reads, no state.
+ * Pure function in, SVG string out, no state — the one DOM read (accent())
+ * is so the "req" arrows pick up the current product's theme color (orange
+ * for SNAP, blue for Gateway, via .theme-gateway on <body> — see
+ * core/render.ts TopBar.render()) instead of duplicating that hex value
+ * here as a second, driftable source of truth.
  * -------------------------------------------------------------------------
  */
 
@@ -19,15 +23,25 @@ function esc(s: string): string {
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;");
 }
 
+/** Current --accent, resolved live so it's always right regardless of which
+ * product's theme class is active on <body> when a diagram is drawn.
+ * Reads from document.body, not documentElement — .theme-gateway's override
+ * lives on <body>, and a custom property only cascades to descendants of
+ * wherever it's set, never up to an ancestor. */
+function accentColor(): string {
+  return getComputedStyle(document.body).getPropertyValue("--accent").trim() || "#EE4D2D";
+}
+
 function seqSVG(actors: string[], steps: Step[]): string {
   const W = 640, marginX = 78, topY = 30, rowH = 38;
   const n = actors.length;
   const xs = actors.map((_, i) => (n === 1 ? W / 2 : marginX + i * ((W - 2 * marginX) / (n - 1))));
   const H = topY + 26 + steps.length * rowH + 14;
 
+  const accent = accentColor();
   let svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:660px;display:block;margin:0 auto;">`;
   svg += `<defs>
-    <marker id="arrowOrange" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#EE4D2D"/></marker>
+    <marker id="arrowOrange" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="${accent}"/></marker>
     <marker id="arrowGreen" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#0B6E4F"/></marker>
   </defs>`;
 
@@ -41,7 +55,7 @@ function seqSVG(actors: string[], steps: Step[]): string {
     const y = topY + 26 + i * rowH;
     const x1 = xs[s.from], x2 = xs[s.to];
     const isRes = s.dir === "res";
-    const color = isRes ? "#0B6E4F" : "#EE4D2D";
+    const color = isRes ? "#0B6E4F" : accent;
     const marker = isRes ? "arrowGreen" : "arrowOrange";
     svg += `<text x="${(x1 + x2) / 2}" y="${y - 7}" text-anchor="middle" font-size="10.2" fill="${color}" font-weight="700" font-family="ui-monospace,monospace">${esc(s.label)}</text>`;
     if (x1 <= x2) {

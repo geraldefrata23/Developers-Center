@@ -6,14 +6,17 @@
  * This replaces the old "Search endpoints" box, which was dropped because
  * this reference is small enough to just Cmd/Ctrl-F.
  *
- * Scope, on purpose: this translates the UI chrome, not the API reference
- * content itself (field names, descriptions, sample payloads). ShopeePay's
- * own API docs are English-only, and duplicating hundreds of technical
- * field descriptions into Indonesian would be its own large effort with a
- * real risk of drifting out of sync with the English source of truth. The
- * dictionary below is intentionally easy to extend if that's wanted later —
- * every UI string funnels through I18N.t(key), so adding a new page's
- * strings is a matter of adding keys here, not touching render logic.
+ * Scope: this dictionary covers UI chrome (fixed strings with a stable
+ * key, reused across pages). The actual page content — param descriptions,
+ * ledes, callouts, static-page prose — is translated a different way, via
+ * the `Text` type (types.ts) and the `t()` helper (contentHelpers.ts),
+ * co-located with the English copy right in each product's content.ts
+ * instead of as entries in a giant flat key/value table here. Both
+ * mechanisms read the same I18N.getLang() state, so switching language
+ * refreshes everything consistently. What's deliberately NOT translated
+ * either way — endpoint/page titles, breadcrumbs, nav labels, response-code
+ * messages, field names/types, sample payloads, signing formulas — is
+ * API naming or API data, not content; see the README.
  * -------------------------------------------------------------------------
  */
 

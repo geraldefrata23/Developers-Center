@@ -9,10 +9,34 @@
  */
 
 import { I18N } from "./i18n.js";
-import type { ParamNode, ReqLevel, RcGroup } from "../types.js";
+import type { ParamNode, ReqLevel, RcGroup, Text } from "../types.js";
+
+function isBilingual(s: unknown): s is { en: string; id: string } {
+  return typeof s === "object" && s !== null && "en" in s && "id" in s;
+}
+
+/** Resolves a Text value (see types.ts) to a plain string in the current
+ * language — a no-op passthrough for anything that isn't a {en,id} pair
+ * (plain strings, numbers via String(s) callers), so every existing caller
+ * of esc()/text() keeps working unchanged whether or not its value has
+ * been translated yet. */
+function resolveText(s: Text | unknown): string {
+  return isBilingual(s) ? (I18N.getLang() === "id" ? s.id : s.en) : String(s);
+}
 
 function esc(s: unknown): string {
-  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  return resolveText(s).replace(/&/g, "&amp;").replace(/</g, "&lt;");
+}
+
+/** Same as esc(), plus quotes — use this (instead of esc()) for any dynamic
+ * value interpolated inside a quoted HTML attribute (e.g. value="${...}").
+ * esc() alone only stops a value from opening a new tag; it doesn't stop a
+ * value containing a `"` from closing the attribute early and adding
+ * arbitrary attributes (e.g. an onmouseover handler) next to it. Not needed
+ * for plain text-node content — jsonHighlightRaw relies on esc() leaving
+ * `"` untouched, so don't swap that one to escAttr(). */
+function escAttr(s: unknown): string {
+  return esc(s).replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
 function reqLabel(r: ReqLevel): string {
@@ -64,10 +88,24 @@ function versionOf(path: string): string {
 function firstErrorRow(rc: RcGroup[]): { http: string; code: string; message: string } | null {
   for (const group of rc) {
     for (const row of group.rows) {
-      if (row[3] === "err" && row[0] !== "—") return { http: row[0], code: row[1], message: row[2] };
+      // Real error rows' messages are always plain English (mirrors what the
+      // API actually returns — see types.ts RcRow); resolveText() is only
+      // exercising its passthrough path here, never translating a real one.
+      if (row[3] === "err" && row[0] !== "—") return { http: row[0], code: row[1], message: resolveText(row[2]) };
     }
   }
   return null;
 }
 
-export const DOM = { esc, reqLabel, renderParamNode, renderParamList, jsonHighlight, jsonHighlightRaw, versionOf, firstErrorRow };
+export const DOM = {
+  esc,
+  escAttr,
+  text: resolveText,
+  reqLabel,
+  renderParamNode,
+  renderParamList,
+  jsonHighlight,
+  jsonHighlightRaw,
+  versionOf,
+  firstErrorRow,
+};

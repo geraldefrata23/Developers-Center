@@ -129,6 +129,7 @@ run.
 | `SNAP_BASE` | `https://api.snap.uat.airpay.co.id` | SNAP sandbox host |
 | `AIRPAY_BASE` | `https://api.gw.uat.airpay.co.id` | AirPay Gateway sandbox host |
 | `DEBUG_SANDBOX_CALLS` | `false` | Set to `true` to log every outbound request/response server-side |
+| `SNAP_CHANNEL_ID` | `95251` | Value sent as the `CHANNEL-ID` header on hmac/hmac-get calls |
 
 ## Routing
 

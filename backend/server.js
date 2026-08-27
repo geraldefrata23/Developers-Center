@@ -36,6 +36,12 @@ const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || "*";
 // In local dev, ALLOWED_ORIGIN=* is fine. Once this is reachable from a real
 // domain, set ALLOWED_ORIGIN in .env to a comma-separated allow-list —
 // never leave it wide open in a deployed environment.
+if (ALLOWED_ORIGIN === "*") {
+  console.warn(
+    '[warn] ALLOWED_ORIGIN is "*" — fine for local dev, but set a comma-separated allow-list in .env before deploying anywhere reachable from the internet.'
+  );
+}
+
 app.use(
   cors({
     origin: ALLOWED_ORIGIN === "*" ? true : ALLOWED_ORIGIN.split(",").map((s) => s.trim()),

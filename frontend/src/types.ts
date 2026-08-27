@@ -11,20 +11,31 @@
  * next to every request/response field. */
 export type ReqLevel = "M" | "O" | "C";
 
+/** A piece of human-authored prose (param descriptions, ledes, callouts,
+ * signing-card notes, spec-table text...) — as opposed to API naming/data
+ * (field names, types, endpoint titles, sample payloads, response-code
+ * messages), which stays a plain English `string` everywhere and is never
+ * wrapped in this type. Content authors write either a bare string
+ * (English-only — fine for content not translated yet) or `{en, id}` for
+ * both. Resolved at render time (DOM.text() / DOM.esc(), both transparent
+ * to either shape) via I18N.getLang(), so it reacts correctly when the
+ * language toggle changes — see core/dom.ts. */
+export type Text = string | { en: string; id: string };
+
 /** A single request/response field, recursively — `children` covers nested
  * objects/arrays the same way the real JSON body does. */
 export interface ParamNode {
   name: string;
   type: string;
   req: ReqLevel;
-  desc: string;
+  desc: Text;
   children?: ParamNode[] | null;
 }
 
 export interface Callout {
   type: "blue";
-  title: string;
-  body: string;
+  title: Text;
+  body: Text;
 }
 
 /** Which signing scheme an endpoint uses — drives both the Authentication
@@ -39,8 +50,12 @@ export type HttpMethod = "get" | "post";
 
 /** [httpCode, responseCode, message, "ok" | "err"] — kept as a tuple-shaped
  * array (not an object) so the existing response-code tables stay compact
- * to read and author. */
-export type RcRow = [string, string, string, string];
+ * to read and author. The message stays plain English `string` everywhere
+ * in practice — it mirrors the literal text the real API returns, so it's
+ * deliberately not translated (see i18n.ts) — except RC_TBD's one
+ * placeholder row in contentHelpers.ts, which isn't a real API message and
+ * uses the `Text` shape the type still allows. */
+export type RcRow = [string, string, Text, string];
 
 export interface RcGroup {
   group: string;
@@ -70,7 +85,7 @@ export interface EndpointDef {
   svc: string;
   sign: SignType;
   flow?: FlowType;
-  lede: string;
+  lede: Text;
   callout: Callout | null;
   reqParams: ParamNode[];
   // Sample payloads are arbitrary JSON shapes by nature — typed as unknown

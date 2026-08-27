@@ -25,20 +25,41 @@
  */
 
 import { DOM } from "./dom.js";
-import type { ParamNode, ReqLevel, RcGroup, Callout } from "../types.js";
+import { I18N } from "./i18n.js";
+import type { ParamNode, ReqLevel, RcGroup, Callout, Text } from "../types.js";
 
 export const M: ReqLevel = "M";
 export const O: ReqLevel = "O";
 export const C: ReqLevel = "C";
 
-export function P(name: string, type: string, req: ReqLevel, desc: string, children?: ParamNode[] | null): ParamNode {
+/** For free-form HTML template literals (static page render() bodies) that
+ * mix markup with prose inline — pick the current language's copy of a
+ * string right where it's authored, e.g. `${t("Refunds", "Refund")}`.
+ * Structured content (ParamNode.desc, EndpointDef.lede, Callout...) uses
+ * the `Text` type instead (see types.ts), resolved by DOM.esc()/DOM.text();
+ * this is the equivalent for content that isn't going through those. */
+export function t(en: string, id: string): string {
+  return I18N.getLang() === "id" ? id : en;
+}
+
+export function P(name: string, type: string, req: ReqLevel, desc: Text, children?: ParamNode[] | null): ParamNode {
   return { name, type, req, desc, children: children || null };
 }
 
 export const RC_TBD: RcGroup[] = [
   {
     group: "Status",
-    rows: [["—", "—", "Additional response codes for this product will be published as they are confirmed with the API team. In the meantime, the general SNAP codes in the Response Code Directory apply.", "err"]],
+    rows: [
+      [
+        "—",
+        "—",
+        {
+          en: "Additional response codes for this product will be published as they are confirmed with the API team. In the meantime, the general SNAP codes in the Response Code Directory apply.",
+          id: "Kode response tambahan untuk produk ini akan dipublikasikan setelah dikonfirmasi bersama tim API. Sementara itu, kode SNAP umum di Response Code Directory berlaku.",
+        },
+        "err",
+      ],
+    ],
   },
 ];
 
@@ -47,8 +68,11 @@ export const RC_TBD: RcGroup[] = [
  * on cpm-refund / mpm-refund / co-refund / lp-refund individually. */
 export const REFUND_CALLOUT: Callout = {
   type: "blue",
-  title: "Refunds have timing and funding rules",
-  body: "Blocked between 12AM–5AM (reconciliation window), funded from a same-day ShopeePay transaction on the same checkout method, and partial refunds must be sequential, not overlapping. See Integration Best Practices for the full detail.",
+  title: { en: "Refunds have timing and funding rules", id: "Refund memiliki aturan waktu dan sumber dana" },
+  body: {
+    en: "Blocked between 12AM–5AM (reconciliation window), funded from a same-day ShopeePay transaction on the same checkout method, and partial refunds must be sequential, not overlapping. See Integration Best Practices for the full detail.",
+    id: "Diblokir antara pukul 00:00–05:00 (jendela rekonsiliasi), didanai dari transaksi ShopeePay pada hari yang sama dengan metode checkout yang sama, dan refund parsial harus berurutan, tidak boleh tumpang tindih. Lihat Integration Best Practices untuk detail lengkapnya.",
+  },
 };
 
 /** Every Refund Payment endpoint (MPM/78, CPM/80, Checkout+Link&Pay/58)
@@ -190,24 +214,37 @@ export function disbursementRC(svc: "37" | "38" | "39"): RcGroup[] {
  ];
 }
 
-export function signCard(icon: string, title: string, algo: string, note: string, formula: string): string {
-  return `<div class="mini-card" style="margin-bottom:12px;">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-      <span style="font-size:19px;filter:grayscale(1) opacity(.8)">${icon}</span>
-      <b style="font-size:14px;margin:0;">${DOM.esc(title)}</b>
-      <span class="meta-pill" style="margin-left:auto;border-color:var(--line);color:var(--ink-soft);background:var(--line-soft);">${DOM.esc(algo)}</span>
+// title/algo stay plain `string` (not Text) — they name a signing scheme
+// ("Access Token", "Symmetric · HMAC-SHA512"), same "API naming" bucket as
+// endpoint titles, deliberately not translated. `note` is the actual prose
+// explaining it, so that one is Text; `formula` is code, never translated.
+export function signCard(icon: string, title: string, algo: string, note: Text, formula: string): string {
+  // Dedicated "sign-card" class tree — deliberately NOT sharing .mini-card,
+  // which is also used (plain <b>+<span> pairs) for the simple feature grids
+  // on the Get Started pages. Reusing it here would mean any restyle of one
+  // bleeds into the other. See styles.css for the sign-card rules.
+  return `<div class="sign-card">
+    <div class="sign-card-head">
+      <span class="sign-card-icon">${icon}</span>
+      <span class="sign-card-title">${DOM.esc(title)}</span>
+      <span class="sign-card-algo">${DOM.esc(algo)}</span>
     </div>
-    <div class="param-desc" style="margin-bottom:10px;font-size:13px;">${note}</div>
-    <pre class="code" style="margin:0;font-size:11.3px;padding:12px 14px;">${DOM.esc(formula)}</pre>
+    <div class="sign-card-note">${DOM.text(note)}</div>
+    <pre class="code sign-card-code">${DOM.esc(formula)}</pre>
   </div>`;
 }
 
-export function enumRow(code: string, desc: string): string {
+// code stays plain `string` (an enum/status code value — API data).
+export function enumRow(code: string, desc: Text): string {
   return `<div class="param-node"><div class="param-head"><span class="param-name">${DOM.esc(code)}</span></div><div class="param-desc">${DOM.esc(desc)}</div></div>`;
 }
 
-export function specTable(headers: string[], rows: string[][]): string {
+// Cells go through DOM.text() (not esc()) — same as before, some callers
+// intentionally pass a cell containing raw markup (e.g. `<span class="mono">`)
+// that must NOT be HTML-escaped; Text-typed cells resolve language first,
+// then pass through untouched exactly like a plain string always has.
+export function specTable(headers: Text[], rows: Text[][]): string {
   const thead = `<tr>${headers.map((h) => `<th>${DOM.esc(h)}</th>`).join("")}</tr>`;
-  const tbody = rows.map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join("")}</tr>`).join("");
+  const tbody = rows.map((r) => `<tr>${r.map((c) => `<td>${DOM.text(c)}</td>`).join("")}</tr>`).join("");
   return `<div class="spec-table-wrap"><table class="spec-table"><thead>${thead}</thead><tbody>${tbody}</tbody></table></div>`;
 }

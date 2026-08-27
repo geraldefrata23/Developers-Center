@@ -252,7 +252,7 @@ export const TryIt = (function () {
             <div class="field-hint" style="margin-bottom:4px;text-transform:none;">${DOM.esc(q.name)}${
             q.req === "M" ? ' <span style="color:var(--accent-ink);font-weight:800;">*</span>' : ""
           }</div>
-            <input class="inp qp-input" data-qp="${DOM.esc(q.name)}" id="qp_${DOM.esc(q.name)}" placeholder="${DOM.esc(q.sample)}" value="${DOM.esc(val)}">
+            <input class="inp qp-input" data-qp="${DOM.esc(q.name)}" id="qp_${DOM.esc(q.name)}" placeholder="${DOM.esc(q.sample)}" value="${DOM.escAttr(val)}">
           </div>`;
         })
         .join("");
@@ -303,7 +303,7 @@ export const TryIt = (function () {
       ? section(
           "token",
           I18N.t("tryit.accessToken"),
-          `<input class="inp" id="tryToken" value="${DOM.esc(creds.lastAccessToken || "run Get Access Token first")}">`
+          `<input class="inp" id="tryToken" value="${DOM.escAttr(creds.lastAccessToken || "run Get Access Token first")}">`
         )
       : "";
 

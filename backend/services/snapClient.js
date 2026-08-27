@@ -26,6 +26,9 @@ const { isoTimestamp, sha256Hex, signRsaSha256, signHmac } = require("./signing"
 const SNAP_BASE = process.env.SNAP_BASE || "https://api.snap.uat.airpay.co.id";
 const AIRPAY_BASE = process.env.AIRPAY_BASE || "https://api.gw.uat.airpay.co.id";
 const DEBUG = String(process.env.DEBUG_SANDBOX_CALLS).toLowerCase() === "true";
+// Sandbox channel id ShopeePay assigned this integration — was hardcoded
+// inline before; kept as the same default, just overridable per-environment.
+const CHANNEL_ID = process.env.SNAP_CHANNEL_ID || "95251";
 
 class BadRequestError extends Error {}
 
@@ -89,7 +92,7 @@ async function execute({ endpointId, credentials = {}, accessToken, body, pathPa
     headers["X-TIMESTAMP"] = timestamp;
     headers["X-SIGNATURE"] = signature;
     headers["X-EXTERNAL-ID"] = crypto.randomUUID();
-    headers["CHANNEL-ID"] = "95251";
+    headers["CHANNEL-ID"] = CHANNEL_ID;
     headers["Authorization"] = `Bearer ${accessToken}`;
   } else if (ep.sign === "airpay") {
     if (!credentials.airpaySecret) throw new BadRequestError("credentials.airpaySecret is required.");

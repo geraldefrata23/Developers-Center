@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node --test --test-name-pattern='.*' backend/services/*.test.js)",
+      "Bash(node --test backend)"
+    ]
+  }
+}

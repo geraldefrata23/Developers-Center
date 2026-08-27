@@ -144,8 +144,35 @@ export const App = {
 
 const ICON_BACK = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>`;
 
+// SNAP/landing default — identical to index.html's static markup, since
+// that's what's already painted before this ever runs on first load.
+const BRAND_SNAP = `<img src="https://product.shopeepay.com/static/images/logo/shopeepay-logo.svg?w=256&q=75" alt="ShopeePay" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'mark',textContent:'S'}))"><div class="word"><small>Developers Center</small></div>`;
+const BRAND_GATEWAY = `<img src="/img/airpay_logo.png" alt="AirPay" class="brand-airpay"><div class="word"><small>Developers Center</small></div>`;
+
+/** Browser tab icon, matching whichever product's brand mark is showing in
+ * the topbar. Landing gets no opinion here on purpose — no <link rel="icon">
+ * exists until the first time a product page sets one, so a fresh visit to
+ * "/" still shows the browser's own default, exactly as before this existed. */
+function setFavicon(href: string): void {
+  let link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+  if (!link) {
+    link = document.createElement("link");
+    link.rel = "icon";
+    document.head.appendChild(link);
+  }
+  link.href = href;
+}
+
 export const TopBar = {
   render(): void {
+    document.body.classList.toggle("theme-gateway", App.mode === "gateway");
+
+    const brand = document.getElementById("brand");
+    if (brand) brand.innerHTML = App.mode === "gateway" ? BRAND_GATEWAY : BRAND_SNAP;
+
+    if (App.mode === "snap") setFavicon("/img/favicon-snap.png");
+    else if (App.mode === "gateway") setFavicon("/img/favicon-airpay.png");
+
     const backSlot = document.getElementById("backBtnSlot");
     if (backSlot) {
       backSlot.innerHTML = App.mode === "landing" ? "" : `<button class="icon-back-btn" title="${I18N.t("topbar.back")}" onclick="App.backToLanding()">${ICON_BACK}</button>`;

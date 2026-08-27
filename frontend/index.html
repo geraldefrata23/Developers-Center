@@ -13,7 +13,11 @@
 
 <div class="topbar">
   <div id="backBtnSlot"></div>
-  <div class="brand" onclick="App.backToLanding()" style="cursor:pointer;">
+  <!-- Inner content rebuilt by TopBar.render() in core/render.ts whenever
+       App.mode changes — swaps between the ShopeePay logo (SNAP/landing)
+       and the AirPay mark (Gateway). What's below is just the SNAP/landing
+       default so there's something correct to paint before JS runs. -->
+  <div class="brand" id="brand" onclick="App.backToLanding()" style="cursor:pointer;">
     <img src="https://product.shopeepay.com/static/images/logo/shopeepay-logo.svg?w=256&amp;q=75" alt="ShopeePay"
          onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'mark',textContent:'S'}))">
     <div class="word"><small>Developers Center</small></div>
