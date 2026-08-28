@@ -231,7 +231,7 @@ function renderNotifyGateway(): string {
   <p class="p">${t("If your callback URL doesn't return a successful response, AirPay retries up to 10 times with increasing gaps: 10, 20, and 30 minutes, then 4 hours, then 7 hours, then every 12 hours for the remaining 5 attempts — about 3 days of retries in total. Make your handler idempotent (safe to process the same event_id twice) rather than relying on it being called exactly once.",
     "Jika callback URL Anda tidak mengembalikan response sukses, AirPay akan mencoba ulang hingga 10 kali dengan jeda yang semakin panjang: 10, 20, dan 30 menit, lalu 4 jam, lalu 7 jam, kemudian setiap 12 jam untuk 5 percobaan tersisa — total sekitar 3 hari percobaan ulang. Buat handler Anda idempotent (aman diproses dua kali untuk event_id yang sama), jangan mengandalkan asumsi bahwa callback hanya dipanggil tepat satu kali.")}</p>
 
-  <h2 class="sec">${t("Checkout callback shape", "Bentuk callback checkout")}</h2>
+  <h2 class="sec">${t("Checkout Callback Format", "Format Callback Checkout")}</h2>
   <p class="p">${t("Carries the same fields as Get Checkout ID Status's checkout_details, wrapped in an event envelope — here under the key payment_session_details:",
     "Membawa field yang sama seperti checkout_details pada Get Checkout ID Status, dibungkus dalam sebuah event envelope — di sini dengan nama key payment_session_details:")}</p>
   <pre class="code">${DOM.esc(JSON.stringify({
@@ -246,7 +246,7 @@ function renderNotifyGateway(): string {
     },
   }, null, 2))}</pre>
 
-  <h2 class="sec">${t("Refund callback shape", "Bentuk callback refund")}</h2>
+  <h2 class="sec">${t("Refund Callback Format", "Format Callback Refund")}</h2>
   <pre class="code">${DOM.esc(JSON.stringify({
     event_type:"refund.successful", event_id:"unique_identifier_of_the_webhook_event",
     timestamp:"2026-05-15T19:00:00+07:00", created_at:"2026-05-15T18:55:00+07:00", updated_at:"2026-05-15T19:00:00+07:00",
